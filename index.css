@@ -25,9 +25,10 @@ h1 {
     grid-column-gap: 10px;
     grid-row-gap: 10px;
     background: #ddd;
+    font-family: "Comic Sans MS", "Comic Sans", cursive;
 }
 
-#board div {
+#board .space {
     text-align: center;
     vertical-align: middle;
     line-height: 150px;
@@ -35,14 +36,14 @@ h1 {
     background: #fff;
 }
 
-#board div.unused {
+#board .space.unused {
     background: #fff;
 }
-#board div.used {
+#board .space.used {
     background: #eee;
 }
 
-#board div.win {
+#board .space.win {
     background: yellow;
 }
 

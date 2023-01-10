@@ -1,6 +1,10 @@
 let currentPlayer = 0;
 let moves = 0;
 let won = false;
+let full = false;
+const whoArea = document.querySelector('#who')
+const infoArea = document.querySelector('#info')
+const playAgain = document.querySelector('#play-again');
 const players = ['X','O'];
 const spaces = [];
 const winningMoves = [
@@ -14,24 +18,21 @@ const winningMoves = [
     [2,4,6]
 ];
 
-const checkForWinner = player => {
-    for(let i=0; i < winningMoves.length; i++) {
-        if(spaces[winningMoves[i][0]].classList.contains('is-'+player)
-            &&
-           spaces[winningMoves[i][1]].classList.contains('is-'+player)
-            &&
-           spaces[winningMoves[i][2]].classList.contains('is-'+player)
-        ) {
-            spaces[winningMoves[i][0]].classList.add('win');
-            spaces[winningMoves[i][1]].classList.add('win');
-            spaces[winningMoves[i][2]].classList.add('win');
-            return true;
-        }
-    }
-}
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('#board .space').forEach((space) => {
+        spaces.push(space);
+        space.addEventListener('click', clickHandler);
+    });
 
-const clickHandler = el => {
-    if(won) return false;
+    playAgain.addEventListener('click', (e) => {
+        clearBoard();
+    });
+
+    showCurrentPlayer();
+});
+
+function clickHandler({ target: el }) {
+    if(won || full) return false;
 
     clearInfo();
 
@@ -39,12 +40,12 @@ const clickHandler = el => {
         showInfo('In Use -- Try Again');
     }
     else {
+        let player = players[currentPlayer]
         el.classList.remove('unused');
-        el.classList.add('used');
-        el.classList.add('is-'+players[currentPlayer]);
-        el.innerHTML = players[currentPlayer];
-        
-        won = checkForWinner(players[currentPlayer]);
+        el.classList.add('used',`is-${player}`);
+        el.innerHTML = player;
+
+        won = checkForWinner(player);
 
         if(won) {
             showInfo('Won The Game!');
@@ -54,6 +55,7 @@ const clickHandler = el => {
             moves++;
             if(moves === 9) {
                 showInfo('No Winner -- Board Full');
+                full = true;
                 showReset();
                 return false;
             }
@@ -65,49 +67,53 @@ const clickHandler = el => {
     }
 }
 
-const showCurrentPlayer = () => {
-    document.querySelector('#who').innerHTML = players[currentPlayer];
+function showCurrentPlayer() {
+    whoArea.innerHTML = players[currentPlayer];
 }
 
-const showInfo = info => {
-    document.querySelector('#info').innerHTML = info;
+function showInfo(info) {
+    infoArea.innerHTML = info;
 }
 
-const clearInfo = () => {
-    document.querySelector('#info').innerHTML = '';
+function clearInfo() {
+    infoArea.innerHTML = '';
 }
 
-const showReset = () => {
-    document.querySelector('#play-again').style.display = 'inline';
+function showReset() {
+    playAgain.style.display = 'inline';
 }
 
-const hideReset = () => {
-    document.querySelector('#play-again').style.display = 'none';
+function hideReset() {
+    playAgain.style.display = 'none';
 }
 
-const clearBoard = () => {
+function checkForWinner(player) {
+    let isWinner = winningMoves.reduce((isWon, winningMove) => {
+        if(isWon) return isWon
+
+        isWon = (winningMove.every((move) => spaces[move].classList.contains(`is-${player}`)))
+            ? true
+            : false
+
+        if(isWon) winningMove.forEach((move) => spaces[move].classList.add('win'))
+
+        return isWon
+    }, false)
+    
+    return isWinner
+}
+
+function clearBoard() {
     hideReset();
     currentPlayer = (currentPlayer === 0) ? 1 : 0 ;
     moves = 0;
     won = false;
+    full = false;
     showCurrentPlayer();
     clearInfo();
-    spaces.forEach(s => {
-        s.innerHTML = '';
-        s.classList.remove('used','win','is-X','is-O');
-        s.classList.add('unused');
+    spaces.forEach((space) => {
+        space.innerHTML = '';
+        space.classList.remove('used','win','is-X','is-O');
+        space.classList.add('unused');
     });
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    showCurrentPlayer();
-    document.querySelectorAll('#board div').forEach(d => {
-        spaces.push(d);
-        d.addEventListener('click', e => {
-            clickHandler(e.target);
-        });
-    });
-    document.querySelector('#play-again').addEventListener('click', e => {
-        clearBoard();
-    });
-});
